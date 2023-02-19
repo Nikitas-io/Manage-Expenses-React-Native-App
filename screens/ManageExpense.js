@@ -9,7 +9,10 @@ import { ExpensesContext } from '../store/expenses-context';
 function ManageExpense({ route, navigation }) {
   const expensesCtx = useContext(ExpensesContext);
 
+  // To check if this screen is going to be used to edit an item, we 
+  // are checking to see if an expense ID is being passed to it.
   const editedExpenseId = route.params?.expenseId;
+  // Convert the ID value into a boolean ('true' if defined, 'false' if it's not).
   const isEditing = !!editedExpenseId;
 
   useLayoutEffect(() => {
