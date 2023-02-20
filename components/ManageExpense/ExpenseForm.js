@@ -1,23 +1,39 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import Input from "./Input";
 
-function ExpenseForm() {
+import Button from '../UI/Button';
+import { getFormattedDate } from '../../util/date';
+
+function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
 
     const [inputValues, setInputValues] = useState({
-        amount: '',
-        date: '',
-        description: '',
-      });
-    
-      function inputChangedHandler(inputIdentifier, enteredValue) {
+        // Set the default values if there are any, for the editing mode.
+        amount: defaultValues ? defaultValues.amount.toString() : '',
+        date: defaultValues ? getFormattedDate(defaultValues.date) : '',
+        description: defaultValues ? defaultValues.description : '',
+    });
+
+    function inputChangedHandler(inputIdentifier, enteredValue) {
         setInputValues((curInputValues) => {
-          return {
+            return {
             ...curInputValues,
             [inputIdentifier]: enteredValue, // Dynamically target the property you need to update.
-          };
+            };
         });
-      }
+    }
+
+    function submitHandler() {
+        // Transform the input values.
+        const expenseData = {
+            amount: +inputValues.amount, // The plus converts the string into a number.
+            date: new Date(inputValues.date), // Convert the date-text into an actuall date object.
+            description: inputValues.description
+        }
+
+        // On submit, send the expense data to the parent component.
+        onSubmit(expenseData);
+    }
 
     return (
         <View style={styles.form}>
@@ -53,8 +69,46 @@ function ExpenseForm() {
                 value: inputValues.description,
                 }}
             />
+
+            <View style={styles.buttons}>
+                <Button style={styles.button} mode="flat" onPress={onCancel}>
+                    Cancel
+                </Button>
+                <Button style={styles.button} onPress={submitHandler}>
+                    {submitButtonLabel}
+                </Button>
+            </View>
         </View>
     )
 }
 
 export default ExpenseForm;
+
+const styles = StyleSheet.create({
+    form: {
+      marginTop: 40,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: 'white',
+      marginVertical: 24,
+      textAlign: 'center',
+    },
+    inputsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    rowInput: {
+      flex: 1,
+    },
+    buttons: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+        button: {
+        minWidth: 120,
+        marginHorizontal: 8,
+    },
+});
