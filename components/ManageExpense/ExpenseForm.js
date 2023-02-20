@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { View, StyleSheet, Text, Alert } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import Input from "./Input";
 
 import Button from '../UI/Button';
 import { getFormattedDate } from '../../util/date';
+import { GlobalStyles } from "../../constants/styles";
 
 function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
 
@@ -80,38 +81,41 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
             <Text style={styles.title}>Your Expense</Text>
             <View style={styles.inputsRow}>
                 <Input
-                style={styles.rowInput}
-                label="Amount"
-                textInputConfig={{
-                    keyboardType: 'decimal-pad',
-                    onChangeText: inputChangedHandler.bind(this, 'amount'), // Change the value of the 'amount' textInput.
-                    value: inputs.amount.value,
-                }}
+                    style={styles.rowInput}
+                    label="Amount"
+                    invalid={!inputs.amount.isValid}
+                    textInputConfig={{
+                        keyboardType: 'decimal-pad',
+                        onChangeText: inputChangedHandler.bind(this, 'amount'), // Change the value of the 'amount' textInput.
+                        value: inputs.amount.value,
+                    }}
                 />
                 <Input
-                style={styles.rowInput}
-                label="Date"
-                textInputConfig={{
-                    placeholder: 'YYYY-MM-DD',
-                    maxLength: 10,
-                    onChangeText: inputChangedHandler.bind(this, 'date'), // Change the value of the 'date' textInput.
-                    value: inputs.date.value,
-                }}
+                    style={styles.rowInput}
+                    label="Date"
+                    invalid={!inputs.date.isValid}
+                    textInputConfig={{
+                        placeholder: 'YYYY-MM-DD',
+                        maxLength: 10,
+                        onChangeText: inputChangedHandler.bind(this, 'date'), // Change the value of the 'date' textInput.
+                        value: inputs.date.value,
+                    }}
                 />
             </View>
             <Input
                 label="Description"
+                invalid={!inputs.description.isValid}
                 textInputConfig={{
-                multiline: true,
-                // autoCapitalize: 'none'
-                // autoCorrect: false // default is true
-                onChangeText: inputChangedHandler.bind(this, 'description'),
-                value: inputs.description.value,
+                    multiline: true,
+                    // autoCapitalize: 'none'
+                    // autoCorrect: false // default is true
+                    onChangeText: inputChangedHandler.bind(this, 'description'),
+                    value: inputs.description.value,
                 }}
             />
 
             {/* Input validation message */}
-            {formIsInvalid && <Text>Invalid input values. - Please check your values and try again.</Text>}
+            {formIsInvalid && <Text style={styles.errorText}>Invalid input values. - Please check your values and try again.</Text>}
 
             <View style={styles.buttons}>
                 <Button style={styles.button} mode="flat" onPress={onCancel}>
@@ -129,21 +133,26 @@ export default ExpenseForm;
 
 const styles = StyleSheet.create({
     form: {
-      marginTop: 40,
+        marginTop: 40,
     },
     title: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: 'white',
-      marginVertical: 24,
-      textAlign: 'center',
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: 'white',
+        marginVertical: 24,
+        textAlign: 'center',
+    },
+    errorText: {
+        textAlign: 'center',
+        color: GlobalStyles.colors.error500,
+        margin: 8,
     },
     inputsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
     rowInput: {
-      flex: 1,
+        flex: 1,
     },
     buttons: {
         flexDirection: 'row',
