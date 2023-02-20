@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Alert } from "react-native";
 import Input from "./Input";
 
 import Button from '../UI/Button';
@@ -7,33 +7,73 @@ import { getFormattedDate } from '../../util/date';
 
 function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
 
-    const [inputValues, setInputValues] = useState({
+    const [inputs, setInputs] = useState({
         // Set the default values if there are any, for the editing mode.
-        amount: defaultValues ? defaultValues.amount.toString() : '',
-        date: defaultValues ? getFormattedDate(defaultValues.date) : '',
-        description: defaultValues ? defaultValues.description : '',
+        amount: {
+            value: defaultValues ? defaultValues.amount.toString() : '',
+            isValid: true // Setting the initial input validity to true in order to hide the invalid input message.
+        },
+        date: {
+            value: defaultValues ? getFormattedDate(defaultValues.date) : '',
+            isValid: true
+        },
+        description: {
+            value: defaultValues ? defaultValues.description : '',
+            isValid: true
+        }
     });
 
     function inputChangedHandler(inputIdentifier, enteredValue) {
-        setInputValues((curInputValues) => {
+        setInputs((currentInputs) => {
             return {
-            ...curInputValues,
-            [inputIdentifier]: enteredValue, // Dynamically target the property you need to update.
+            ...currentInputs,
+            [inputIdentifier]: {value: enteredValue, isValid: true}, // Dynamically target the property you need to update.
             };
         });
     }
+    
 
     function submitHandler() {
         // Transform the input values.
         const expenseData = {
-            amount: +inputValues.amount, // The plus converts the string into a number.
-            date: new Date(inputValues.date), // Convert the date-text into an actuall date object.
-            description: inputValues.description
+            amount: +inputs.amount.value, // The plus converts the string into a number.
+            date: new Date(inputs.date.value), // Convert the date-text into an actuall date object.
+            description: inputs.description.value
+        }
+
+        // Form data validation.
+        // Check if the amount is a number greater than 0.
+        const amountIsValid = !isNaN(expenseData.amount) && expenseData.amount > 0;
+        // Check if the date format is invalid.
+        const dateIsValid = expenseData.date.toString() !== 'Invalid Date';
+        // Check if the description is empty.
+        const descriptionIsValid = expenseData.description.trim().length > 0;
+
+        if(!amountIsValid || !dateIsValid || !descriptionIsValid) {
+            // Update the validity of each input.
+            setInputs((curInputs) => {
+                return {
+                  amount: { value: curInputs.amount.value, isValid: amountIsValid },
+                  date: { value: curInputs.date.value, isValid: dateIsValid },
+                  description: {
+                    value: curInputs.description.value,
+                    isValid: descriptionIsValid,
+                  },
+                };
+              });
+
+            return 
         }
 
         // On submit, send the expense data to the parent component.
         onSubmit(expenseData);
     }
+
+    // Check if any input is invalid.
+    const formIsInvalid =
+        !inputs.amount.isValid ||
+        !inputs.date.isValid ||
+        !inputs.description.isValid;
 
     return (
         <View style={styles.form}>
@@ -45,7 +85,7 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
                 textInputConfig={{
                     keyboardType: 'decimal-pad',
                     onChangeText: inputChangedHandler.bind(this, 'amount'), // Change the value of the 'amount' textInput.
-                    value: inputValues.amount,
+                    value: inputs.amount.value,
                 }}
                 />
                 <Input
@@ -55,7 +95,7 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
                     placeholder: 'YYYY-MM-DD',
                     maxLength: 10,
                     onChangeText: inputChangedHandler.bind(this, 'date'), // Change the value of the 'date' textInput.
-                    value: inputValues.date,
+                    value: inputs.date.value,
                 }}
                 />
             </View>
@@ -66,9 +106,12 @@ function ExpenseForm({submitButtonLabel, onCancel, onSubmit, defaultValues}) {
                 // autoCapitalize: 'none'
                 // autoCorrect: false // default is true
                 onChangeText: inputChangedHandler.bind(this, 'description'),
-                value: inputValues.description,
+                value: inputs.description.value,
                 }}
             />
+
+            {/* Input validation message */}
+            {formIsInvalid && <Text>Invalid input values. - Please check your values and try again.</Text>}
 
             <View style={styles.buttons}>
                 <Button style={styles.button} mode="flat" onPress={onCancel}>

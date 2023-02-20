@@ -15,7 +15,7 @@ function ManageExpense({ route, navigation }) {
   const editedExpenseId = route.params?.expenseId;
   // Convert the ID value into a boolean ('true' if defined, 'false' if it's not).
   const isEditing = !!editedExpenseId;
-
+  // Get the selected expense from the context store.
   const selectedExpense = expensesCtx.expenses.find((expense) => expense.id === editedExpenseId)
 
   useLayoutEffect(() => {
