@@ -2,11 +2,13 @@ import axios from 'axios';
 
 const BACKEND_ROOT_URL = 'https://expense-list-testing-default-rtdb.europe-west1.firebasedatabase.app';
 
-export function storeExpense(expenseData) {
-    axios.post(
-        BACKEND_ROOT_URL + "/expenses.json",
-        expenseData
-    );
+export async function storeExpense(expenseData) {
+    // Post the new object to the DB and get a response back with an ID.
+    const response = await axios.post(BACKEND_ROOT_URL + "/expenses.json", expenseData);
+    // Get the response object's id which is stored in the name property.
+    const id = response.data.name;
+    // Return the id of the newly added object.
+    return id;
 }
 
 export async function fetchExpenses() {

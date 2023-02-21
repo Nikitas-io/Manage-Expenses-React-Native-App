@@ -34,13 +34,14 @@ function ManageExpense({ route, navigation }) {
     navigation.goBack();
   }
 
-  function confirmHandler(expenseData) {
+  async function confirmHandler(expenseData) {
     if (isEditing) {
       expensesCtx.updateExpense(editedExpenseId, expenseData);
     } else {
-      expensesCtx.addExpense(expenseData);
       // Send a post request to the firebase server.
-      storeExpense(expenseData);
+      const id = await storeExpense(expenseData);
+      // Store the new expense object to the store.
+      expensesCtx.addExpense({...expenseData, id: id});
     }
     navigation.goBack();
   }
