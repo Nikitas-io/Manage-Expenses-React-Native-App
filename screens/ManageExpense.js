@@ -1,15 +1,19 @@
-import { useContext, useLayoutEffect } from 'react';
+import { useContext, useLayoutEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import Button from '../components/UI/Button';
 import IconButton from '../components/UI/IconButton';
 import { GlobalStyles } from '../constants/styles';
 import { ExpensesContext } from '../store/expenses-context';
 import ExpenseForm from '../components/ManageExpense/ExpenseForm';
 import { deleteExpense, storeExpense, updateExpense } from '../util/http';
+import LoadingOverlay from '../components/UI/LoadingOverlay';
 
 function ManageExpense({ route, navigation }) {
   const expensesCtx = useContext(ExpensesContext);
+
+  // A flag to check if the user is currently submitting data, 
+  // so that we can show a spinner when it is appropriate.
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // To check if this screen is going to be used to edit an item, we 
   // are checking to see if an expense ID is being passed to it.
@@ -26,9 +30,21 @@ function ManageExpense({ route, navigation }) {
   }, [navigation, isEditing]);
 
   async function deleteExpenseHandler() {
-    expensesCtx.deleteExpense(editedExpenseId);
+    // Enable the loading ring.
+    setIsSubmitting(true);
+    
+    // Submit the delete request.
     await deleteExpense(editedExpenseId);
+    
+    // There is no need to disable the loading ring because the modal
+    // will be closed anyway after deleting the expense.
+    // setIsSubmitting(false);
+
+    // Delete the expense from the context store.
+    expensesCtx.deleteExpense(editedExpenseId);
+    // Close the modal.
     navigation.goBack();
+
   }
 
   function cancelHandler() {
@@ -36,6 +52,9 @@ function ManageExpense({ route, navigation }) {
   }
 
   async function confirmHandler(expenseData) {
+    // Enable the loading ring.
+    setIsSubmitting(true);
+
     if (isEditing) {
       // Optimistically update the expense on the DB.
       await updateExpense(editedExpenseId, expenseData);
@@ -47,7 +66,17 @@ function ManageExpense({ route, navigation }) {
       // Store the new expense object to the store.
       expensesCtx.addExpense({...expenseData, id: id});
     }
+
+    // There is no need to disable the loading ring because the modal
+    // will be closed anyway after updating or adding an expense.
+    // setIsSubmitting(false);
+
     navigation.goBack();
+  }
+
+  // Check if an HTTP request is currently under way.
+  if(isSubmitting) {
+    return <LoadingOverlay />;
   }
 
   return (
