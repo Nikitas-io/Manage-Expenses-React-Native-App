@@ -6,7 +6,7 @@ import IconButton from '../components/UI/IconButton';
 import { GlobalStyles } from '../constants/styles';
 import { ExpensesContext } from '../store/expenses-context';
 import ExpenseForm from '../components/ManageExpense/ExpenseForm';
-import { storeExpense } from '../util/http';
+import { deleteExpense, storeExpense, updateExpense } from '../util/http';
 
 function ManageExpense({ route, navigation }) {
   const expensesCtx = useContext(ExpensesContext);
@@ -25,8 +25,9 @@ function ManageExpense({ route, navigation }) {
     });
   }, [navigation, isEditing]);
 
-  function deleteExpenseHandler() {
+  async function deleteExpenseHandler() {
     expensesCtx.deleteExpense(editedExpenseId);
+    await deleteExpense(editedExpenseId);
     navigation.goBack();
   }
 
@@ -36,6 +37,9 @@ function ManageExpense({ route, navigation }) {
 
   async function confirmHandler(expenseData) {
     if (isEditing) {
+      // Optimistically update the expense on the DB.
+      await updateExpense(editedExpenseId, expenseData);
+      // Update the expense on the local context store.
       expensesCtx.updateExpense(editedExpenseId, expenseData);
     } else {
       // Send a post request to the firebase server.

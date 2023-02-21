@@ -34,3 +34,15 @@ export async function fetchExpenses() {
 
     return expenses;
 }
+
+export function updateExpense(id, expenseData) {
+    // When updating an object we don't have to use async/await because we can 
+    // directly return the response.
+    return axios.put(BACKEND_ROOT_URL + `/expenses/${id}.json`, expenseData);
+}
+
+export function deleteExpense(id) {
+    // When deleting an object we don't have to use async/await because we can 
+    // directly return the response.
+    return axios.delete(BACKEND_ROOT_URL + `/expenses/${id}.json`);
+}
