@@ -4,7 +4,7 @@ import { GlobalStyles } from "../../constants/styles";
 
 function LoadingOverlay() {
     return (
-        <View style={sytles.container}>
+        <View style={styles.container}>
             <ActivityIndicator size="large" color="white" />
         </View>
     )
@@ -12,7 +12,7 @@ function LoadingOverlay() {
 
 export default LoadingOverlay;
 
-const sytles = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',

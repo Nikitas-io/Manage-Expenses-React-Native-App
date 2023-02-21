@@ -13,7 +13,7 @@ export async function storeExpense(expenseData) {
 
 export async function fetchExpenses() {
     // Since this function is asynchronous, we await for the response.
-    const response = await axios.get(BACKEND_ROOT_URL + "/expenses.json");
+    const response = await axios.get(BACKEND_ROOT_URL + "/expenses.jafeson");
 
     // Initialize an array to hold the expenses fetched from the backend.
     const expenses = [];
