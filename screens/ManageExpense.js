@@ -7,6 +7,7 @@ import { ExpensesContext } from '../store/expenses-context';
 import ExpenseForm from '../components/ManageExpense/ExpenseForm';
 import { deleteExpense, storeExpense, updateExpense } from '../util/http';
 import LoadingOverlay from '../components/UI/LoadingOverlay';
+import ErrorOverlay from '../components/UI/ErrorOverlay';
 
 function ManageExpense({ route, navigation }) {
   const expensesCtx = useContext(ExpensesContext);
@@ -14,6 +15,8 @@ function ManageExpense({ route, navigation }) {
   // A flag to check if the user is currently submitting data, 
   // so that we can show a spinner when it is appropriate.
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // A state to handle the error overlay.
+  const [error, setError] = useState();
 
   // To check if this screen is going to be used to edit an item, we 
   // are checking to see if an expense ID is being passed to it.
@@ -33,17 +36,24 @@ function ManageExpense({ route, navigation }) {
     // Enable the loading ring.
     setIsSubmitting(true);
     
-    // Submit the delete request.
-    await deleteExpense(editedExpenseId);
-    
-    // There is no need to disable the loading ring because the modal
-    // will be closed anyway after deleting the expense.
-    // setIsSubmitting(false);
+    try{
+      // Submit the delete request.
+      await deleteExpense(editedExpenseId);
 
-    // Delete the expense from the context store.
-    expensesCtx.deleteExpense(editedExpenseId);
-    // Close the modal.
-    navigation.goBack();
+      // There is no need to disable the loading ring because the modal
+      // will be closed anyway after deleting the expense.
+      // setIsSubmitting(false);
+  
+      // Delete the expense from the context store.
+      expensesCtx.deleteExpense(editedExpenseId);
+      // Close the modal.
+      navigation.goBack();
+    } catch(error) {
+      setError('Could not delete expense.')
+      // Disable the loading ring.
+      setIsSubmitting(false);
+    }
+    
 
   }
 
@@ -55,23 +65,34 @@ function ManageExpense({ route, navigation }) {
     // Enable the loading ring.
     setIsSubmitting(true);
 
-    if (isEditing) {
-      // Optimistically update the expense on the DB.
-      await updateExpense(editedExpenseId, expenseData);
-      // Update the expense on the local context store.
-      expensesCtx.updateExpense(editedExpenseId, expenseData);
-    } else {
-      // Send a post request to the firebase server.
-      const id = await storeExpense(expenseData);
-      // Store the new expense object to the store.
-      expensesCtx.addExpense({...expenseData, id: id});
+
+    try {
+      if (isEditing) {
+        // Optimistically update the expense on the DB.
+        await updateExpense(editedExpenseId, expenseData);
+        // Update the expense on the local context store.
+        expensesCtx.updateExpense(editedExpenseId, expenseData);
+      } else {
+        // Send a post request to the firebase server.
+        const id = await storeExpense(expenseData);
+        // Store the new expense object to the store.
+        expensesCtx.addExpense({...expenseData, id: id});
+      }
+
+      // There is no need to disable the loading ring because the modal
+      // will be closed anyway after updating or adding an expense.
+      // setIsSubmitting(false);
+  
+      navigation.goBack();
+    } catch (error) {
+      setError('Could not save data');
+      setIsSubmitting(false);
     }
 
-    // There is no need to disable the loading ring because the modal
-    // will be closed anyway after updating or adding an expense.
-    // setIsSubmitting(false);
+  }
 
-    navigation.goBack();
+  if(error && !isSubmitting) {
+    return <ErrorOverlay message={error} onConfirm={() => setError(null)} />;
   }
 
   // Check if an HTTP request is currently under way.
